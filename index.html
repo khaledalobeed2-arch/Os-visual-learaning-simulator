@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OS Concepts Visual Simulator - Web Preview</title>
+  <style>
+    :root {
+      --bg: #07111f;
+      --bg2: #0d1728;
+      --panel: rgba(12, 19, 35, 0.86);
+      --card: #111c31;
+      --card2: #162341;
+      --line: rgba(114, 149, 255, 0.18);
+      --text: #edf3ff;
+      --muted: #95a6c9;
+      --dim: #5c6c8f;
+      --cyan: #00d4ff;
+      --blue: #4d7dff;
+      --purple: #a678ff;
+      --green: #27d08a;
+      --yellow: #f6c24a;
+      --red: #ff5d6c;
+      --orange: #ff9a49;
+      --shadow: 0 20px 70px rgba(0, 0, 0, 0.35);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 16px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(0, 212, 255, 0.18), transparent 26%),
+        radial-gradient(circle at left center, rgba(166, 120, 255, 0.12), transparent 28%),
+        linear-gradient(180deg, var(--bg), #050a13 80%);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 22px 16px;
+      background: linear-gradient(180deg, rgba(13, 20, 37, 0.95), rgba(9, 14, 27, 0.93));
+      border-left: 1px solid var(--line);
+      backdrop-filter: blur(18px);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .brand {
+      padding: 18px 16px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, rgba(77, 125, 255, 0.22), rgba(0, 212, 255, 0.08));
+      border: 1px solid rgba(0, 212, 255, 0.18);
+      box-shadow: var(--shadow);
+    }
+
+    .brand .kicker {
+      font-size: 11px;
+      letter-spacing: 0.3em;
+      color: var(--cyan);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.1;
+    }
+
+    .brand p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .nav {
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav button {
+      appearance: none;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      text-align: right;
+      width: 100%;
+      border-radius: 16px;
+      padding: 14px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 180ms ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav button .icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      flex: 0 0 auto;
+    }
+
+    .nav button:hover {
+      color: var(--text);
+      background: rgba(255,255,255,0.03);
+      border-color: rgba(255,255,255,0.05);
+    }
+
+    .nav button.active {
+      color: var(--text);
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.13), rgba(77, 125, 255, 0.08));
+      border-color: rgba(0, 212, 255, 0.2);
+      box-shadow: 0 10px 40px rgba(0, 212, 255, 0.08);
+    }
+
+    .sidebar .footer {
+      margin-top: auto;
+      padding: 14px 12px;
+      border-top: 1px solid var(--line);
+      color: var(--dim);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .main {
+      min-width: 0;
+      padding: 26px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.4fr 0.9fr;
+      gap: 18px;
+      align-items: stretch;
+      margin-bottom: 18px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .hero-main {
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-main::after {
+      content: "";
+      position: absolute;
+      inset: auto -50px -80px auto;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,212,255,0.18), transparent 68%);
+      filter: blur(5px);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      color: var(--cyan);
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      font-size: 11px;
+      margin-bottom: 10px;
+    }
+
+    .hero-main h2 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.08;
+    }
+
+    .hero-main p {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.8;
+      max-width: 70ch;
+      margin: 14px 0 0;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .chip {
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 8px 12px;
+      font-size: 12px;
+      color: var(--text);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .stat {
+      padding: 18px;
+      min-height: 118px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .stat .label {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .stat .value {
+      font-size: 28px;
+      font-weight: 700;
+      margin-top: 12px;
+    }
+
+    .stat .hint {
+      color: var(--dim);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .content {
+      display: grid;
+      gap: 18px;
+    }
+
+    .sim {
+      display: none;
+      padding: 22px;
+      animation: rise 280ms ease;
+    }
+
+    .sim.active { display: block; }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .sim-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .sim-head h3 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .sim-head p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.75;
+      font-size: 14px;
+      max-width: 75ch;
+    }
+
+    .badge {
+      padding: 10px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      white-space: nowrap;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(17, 28, 49, 0.94), rgba(13, 20, 35, 0.92));
+      border: 1px solid rgba(145, 173, 255, 0.13);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      min-width: 0;
+    }
+
+    .card h4 {
+      margin: 0 0 12px;
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .control {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .control label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .control input[type="range"], .control input[type="number"] {
+      width: 100%;
+    }
+
+    .control input[type="number"] {
+      background: #0b1323;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 10px 12px;
+      outline: none;
+    }
+
+    .control input[type="checkbox"] {
+      transform: translateY(1px);
+      margin-left: 8px;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .btn {
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: 180ms ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,0.06);
+    }
+
+    .btn.green { border-color: rgba(39, 208, 138, 0.2); }
+    .btn.red { border-color: rgba(255, 93, 108, 0.2); }
+    .btn.yellow { border-color: rgba(246, 194, 74, 0.2); }
+
+    .terminal {
+      background: #07111a;
+      border: 1px solid rgba(0, 212, 255, 0.14);
+      border-radius: 18px;
+      overflow: hidden;
+    }
+
+    .terminal .bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .dots { display: flex; gap: 7px; }
+    .dots span { width: 10px; height: 10px; border-radius: 50%; display: block; }
+    .dots span:nth-child(1) { background: #ff5f57; }
+    .dots span:nth-child(2) { background: #ffbd2e; }
+    .dots span:nth-child(3) { background: #28c840; }
+
+    .terminal pre {
+      margin: 0;
+      padding: 16px;
+      min-height: 280px;
+      color: #cfe7ff;
+      font-size: 13px;
+      line-height: 1.8;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 8px;
+    }
+
+    .timeline-row {
+      display: grid;
+      grid-template-columns: 70px 1fr 60px;
+      gap: 10px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .track {
+      height: 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.04);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, rgba(77,125,255,0.95), rgba(0,212,255,0.9));
+      width: var(--w, 50%);
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.15);
+      transition: width 220ms ease;
+    }
+
+    .fill.warn { background: linear-gradient(90deg, rgba(246,194,74,0.95), rgba(255,154,73,0.88)); }
+    .fill.green { background: linear-gradient(90deg, rgba(39,208,138,0.95), rgba(0,212,255,0.8)); }
+    .fill.red { background: linear-gradient(90deg, rgba(255,93,108,0.95), rgba(255,154,73,0.85)); }
+
+    .buffer {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .slot {
+      aspect-ratio: 1 / 1;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      display: grid;
+      place-items: center;
+      color: var(--dim);
+      position: relative;
+      overflow: hidden;
+      font-size: 12px;
+      min-height: 44px;
+    }
+
+    .slot.filled {
+      background: linear-gradient(180deg, rgba(39,208,138,0.18), rgba(17,28,49,0.78));
+      color: #dfffee;
+      border-color: rgba(39,208,138,0.25);
+    }
+
+    .slot::after {
+      content: "";
+      position: absolute;
+      inset: auto -30% -60% auto;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.12), transparent 68%);
+      transform: rotate(10deg);
+    }
+
+    .nodes {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .node {
+      min-height: 108px;
+      border-radius: 18px;
+      padding: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .node .title {
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .node .big {
+      font-size: 26px;
+      font-weight: 700;
+    }
+
+    .ring {
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      margin-inline: auto;
+      border: 10px solid rgba(255,255,255,0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ring .fill {
+      position: absolute;
+      inset: auto 0 0 0;
+      height: var(--w, 50%);
+      border-radius: 0;
+      background: linear-gradient(180deg, rgba(166,120,255,0.95), rgba(0,212,255,0.9));
+      width: 100%;
+    }
+
+    .resource-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .resource {
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      min-height: 88px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .resource .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .resource .state {
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .resource.locked { border-color: rgba(246,194,74,0.22); }
+    .resource.waiting { border-color: rgba(255,93,108,0.22); }
+    .resource.free { border-color: rgba(39,208,138,0.18); }
+
+    .circle-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .circle {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      font-weight: 700;
+    }
+
+    .arrow {
+      color: var(--dim);
+      font-size: 22px;
+    }
+
+    @media (max-width: 1200px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar {
+        position: static;
+        height: auto;
+        border-left: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .hero, .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 760px) {
+      .main { padding: 16px; }
+      .grid-3, .stats, .nodes, .resource-grid, .buffer { grid-template-columns: 1fr 1fr; }
+      .timeline-row { grid-template-columns: 54px 1fr 44px; }
+    }
+
+    @media (max-width: 560px) {
+      .grid-3, .stats, .nodes, .resource-grid, .buffer { grid-template-columns: 1fr; }
+      .sim-head { flex-direction: column; }
+      .sidebar { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand panel">
+        <div class="kicker">web preview</div>
+        <h1>OS Concepts Visual Simulator</h1>
+        <p>نسخة ويب تفاعلية مبنية كمعاينة سريعة لمفاهيم أنظمة التشغيل الأساسية مع واجهة حديثة وسجل حي.</p>
+      </div>
+
+      <nav class="nav" id="nav"></nav>
+
+      <div class="footer">
+        <div>النسخة الأصلية: PyQt6</div>
+        <div>هذه النسخة تعمل مباشرة في المتصفح.</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="hero">
+        <div class="hero-main panel">
+          <div class="eyebrow">interactive learning</div>
+          <h2>تحويل بصري للمفاهيم دون الحاجة إلى بايثون أو PyQt.</h2>
+          <p>
+            اختر أي نموذج من القائمة اليسرى، ثم شغّل المحاكاة أو غيّر القيم لتشاهد كيف يتبدل السلوك:
+            التزامن، الأقفال، المخازن، الأولوية، والأنوية المتعددة.
+          </p>
+          <div class="chips">
+            <span class="chip">Threads</span>
+            <span class="chip">Processes</span>
+            <span class="chip">Race Condition</span>
+            <span class="chip">Mutex</span>
+            <span class="chip">Semaphore</span>
+            <span class="chip">Producer/Consumer</span>
+            <span class="chip">Deadlock</span>
+            <span class="chip">Starvation</span>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="stat panel">
+            <div class="label">simulations</div>
+            <div class="value" id="statSimulations">8</div>
+            <div class="hint">ثمانية أقسام تعليمية داخل واجهة واحدة.</div>
+          </div>
+          <div class="stat panel">
+            <div class="label">status</div>
+            <div class="value" id="statStatus">ready</div>
+            <div class="hint">كل المقاييس تتغير بشكل حي حسب التفاعل.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="content">
+        <article class="sim panel active" data-key="THREADS">
+          <div class="sim-head">
+            <div>
+              <h3>Threads & Concurrency</h3>
+              <p>محاكاة مرئية للتبديل بين الخيوط على نواة واحدة، مع عدّاد للـ context switch وتوقيت التنفيذ.</p>
+            </div>
+            <div class="badge">single core concurrency</div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <h4>execution timeline</h4>
+              <div class="timeline" id="threadTimeline"></div>
+              <div class="button-row">
+                <button class="btn green" data-action="threads-start">start</button>
+                <button class="btn red" data-action="threads-reset">reset</button>
+              </div>
+            </div>
+            <div class="card">
+              <h4>controls</h4>
+              <div class="control">
+                <label>عدد الخيوط</label>
+                <input id="threadsCount" type="number" min="2" max="8" value="4" />
+              </div>
+              <div class="control">
+                <label>سرعة المحاكاة</label>
+                <input id="threadsSpeed" type="range" min="1" max="10" value="5" />
+              </div>
+              <div class="grid-3">
+                <div class="node"><div class="title">active</div><div class="big" id="threadsActive">0</div></div>
+                <div class="node"><div class="title">waiting</div><div class="big" id="threadsWaiting">0</div></div>
+                <div class="node"><div class="title">switches</div><div class="big" id="threadsSwitches">0</div></div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="sim panel" data-key="PROCESSES">
+          <div class="sim-head">
+            <div>
+              <h3>Processes & Parallelism</h3>
+              <p>عرض عملي يوضح أن عمليتين يمكن أن تعملان في نفس اللحظة على نواتين مختلفتين مع ذاكرة معزولة.</p>
+            </div>
+            <div class="badge">true parallelism</div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <h4>multi-core activity</h4>
+              <div class="nodes">
+                <div class="node">
+                  <div class="title">core 0</div>
+                  <div class="ring"><div class="fill green" id="core0Fill" style="--w: 35%;"></div></div>
+                </div>
+                <div class="node">
+                  <div class="title">core 1</div>
+                  <div class="ring"><div class="fill" id="core1Fill" style="--w: 55%;"></div></div>
+                </div>
+                <div class="node">
+                  <div class="title">memory walls</div>
+                  <div style="margin-top: 12px; color: var(--muted); line-height: 1.7;">P-0 و P-1 يعملان في فضاءين منفصلين للذاكرة.</div>
+                </div>
+              </div>
+              <div class="button-row">
+                <button class="btn green" data-action="process-start">start</button>
+                <button class="btn yellow" data-action="process-burst">burst</button>
+                <button class="btn red" data-action="process-reset">reset</button>
+              </div>
+            </div>
+            <div class="card">
+              <h4>stats</h4>
+              <div class="grid-3">
+                <div class="node"><div class="title">P-0 ticks</div><div class="big" id="p0Ticks">0</div></div>
+                <div class="node"><div class="title">P-1 ticks</div><div class="big" id="p1Ticks">0</div></div>
+                <div class="node"><div class="title">memory</div><div class="big">isolated</div></div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="sim panel" data-key="RACE">
+          <div class="sim-head">
+            <div>
+              <h3>Race Condition</h3>
+              <p>سلوك غير متزامن على متغير مشترك، مع خيار قفل mutex لإظهار الفرق بين الحالة الصحيحة والخاطئة.</p>
+            </div>
+            <div class="badge">shared variable</div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <h4>shared counter</h4>
+              <div class="terminal">
+                <div class="bar">
+                  <div class="dots"><span></span><span></span><span></span></div>
+                  <div>race log</div>
+                </div>
+                <pre id="raceLog">Ready. Toggle mutex and start the worker.</pre>
+              </div>
+            </div>
+            <div class="card">
+              <h4>controls</h4>
+              <div class="control"><label>عدد الخيوط</label><input id="raceThreads" type="number" min="2" max="8" value="3" /></div>
+              <div class="control"><label>المرات لكل خيط</label><input id="raceIters" type="number" min="5" max="100" value="20" /></div>
+              <div class="control"><label><input id="raceMutex" type="checkbox" checked /> تفعيل mutex</label></div>
+              <div class="grid-3">
+                <div class="node"><div class="title">shared</div><div class="big" id="raceShared">0</div></div>
+                <div class="node"><div class="title">expected</div><div class="big" id="raceExpected">60</div></div>
+                <div class="node"><div class="title">lost</div><div class="big" id="raceLost">0</div></div>
+              </div>
+              <div class="button-row">
+                <button class="btn green" data-action="race-start">start</button>
+                <button class="btn red" data-action="race-reset">reset</button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="sim panel" data-key="MUTEX">
+          <div class="sim-head">
+            <div>
+              <h3>Mutex / Monitor</h3>
+              <p>عرض منطقة حرجة مع قفل مرئي يوضح من داخلها ومتى تكون مغلقة أو متاحة.</p>
+            </div>
+            <div class="badge">critical section</div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <h4>critical section</h4>
+              <div class="terminal">
+                <div class="bar"><div class="dots"><span></span><span></span><span></span></div><div>mutex monitor</div></div>
+                <pre id="mutexLog">Critical section is free.</pre>
+              </div>
+            </div>
+            <div class="card">
+              <h4>stats</h4>
+              <div class="grid-3">
+                <div class="node"><div class="title">in cs</div><div class="big" id="mutexInCs">none</div></div>
+                <div class="node"><div class="title">mutex</div><div class="big" id="mutexState">free</div></div>
+                <div class="node"><div class="title">counter</div><div class="big" id="mutexCounter">0</div></div>
+              </div>
+              <div class="button-row">
+                <button class="btn green" data-action="mutex-start">start</button>
+                <button class="btn red" data-action="mutex-reset">reset</button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="sim panel" data-key="SEMAPHORE">
+          <div class="sim-head">
+            <div>
+              <h3>Semaphore</h3>
+              <p>عداد بسيط يوضّح عدد التصاريح المتاحة وعدد الخيوط النشطة أو المنتظرة عند الحد الأعلى.</p>
+            </div>
+            <div class="badge">resource counting</div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <h4>permits</h4>
+              <div class="resource-grid" id="semSlots"></div>
+              <div class="button-row">
+                <button class="btn green" data-action="sem-start">start</button>
+                <button class="btn yellow" data-action="sem-acquire">acquire</button>
+                <button class="btn red" data-action="sem-reset">reset</button>
+              </div>
+            </div>
+            <div class="card">
+              <h4>controls & stats</h4>
+              <div class="control"><label>عدد الخيوط</label><input id="semThreads" type="number" min="2" max="8" value="5" /></div>
+              <div class="control"><label>الحد الأقصى للتزامن</label><input id="semLimit" type="number" min="1" max="8" value="2" /></div>
+              <div class="grid-3">
+                <div class="node"><div class="title">permits</div><div class="big" id="semPermits">2</div></div>
+                <div class="node"><div class="title">active</div><div class="big" id="semActive">0</div></div>
+                <div class="node"><div class="title">waiting</div><div class="big" id="semWaiting">0</div></div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="sim panel" data-key="PRODCONS">
+          <div class="sim-head">
+            <div>
+              <h3>Producer / Consumer</h3>
+              <p>محاكاة لمخزن محدود السعة، المنتج يملأ الخانات والمستهلك يفرغها مع أسهم توضّح مسار الحركة.</p>
+            </div>
+            <div class="badge">bounded buffer</div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <h4>buffer</h4>
+              <div class="buffer" id="bufferSlots"></div>
+              <div class="button-row">
+                <button class="btn green" data-action="pc-produce">produce</button>
+                <button class="btn yellow" data-action="pc-consume">consume</button>
+                <button class="btn red" data-action="pc-reset">reset</button>
+              </div>
+            </div>
+            <div class="card">
+              <h4>stats</h4>
+              <div class="grid-3">
+                <div class="node"><div class="title">produced</div><div class="big" id="pcProduced">0</div></div>
+                <div class="node"><div class="title">consumed</div><div class="big" id="pcConsumed">0</div></div>
+                <div class="node"><div class="title">buffer</div><div class="big" id="pcSize">0</div></div>
+              </div>
+              <div class="control"><label>سعة المخزن</label><input id="pcCap" type="number" min="3" max="12" value="8" /></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="sim panel" data-key="DEADLOCK">
+          <div class="sim-head">
+            <div>
+              <h3>Deadlock</h3>
+              <p>الحلقات الدائرية بين الخيوط والموارد، مع توضيح من يمسك ماذا وأين يحدث الانتظار المتبادل.</p>
+            </div>
+            <div class="badge">circular wait</div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <h4>resource graph</h4>
+              <div class="circle-wrap" id="deadlockGraph"></div>
+              <div class="button-row">
+                <button class="btn green" data-action="deadlock-start">start</button>
+                <button class="btn red" data-action="deadlock-reset">reset</button>
+              </div>
+            </div>
+            <div class="card">
+              <h4>state</h4>
+              <div class="resource-grid" id="deadlockResources"></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="sim panel" data-key="STARVATION">
+          <div class="sim-head">
+            <div>
+              <h3>Starvation</h3>
+              <p>خيوط ذات أولوية مختلفة، حيث يظل الأقل أولوية ينتظر بينما يعمل الأعلى باستمرار حتى يظهر aging.</p>
+            </div>
+            <div class="badge">priority scheduling</div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <h4>cpu distribution</h4>
+              <div class="timeline" id="starvationBars"></div>
+              <div class="button-row">
+                <button class="btn green" data-action="starve-start">start</button>
+                <button class="btn yellow" data-action="starve-aging">aging</button>
+                <button class="btn red" data-action="starve-reset">reset</button>
+              </div>
+            </div>
+            <div class="card">
+              <h4>stats</h4>
+              <div class="grid-3">
+                <div class="node"><div class="title">starving</div><div class="big" id="starveCount">0</div></div>
+                <div class="node"><div class="title">running</div><div class="big" id="starveRunning">T-0</div></div>
+                <div class="node"><div class="title">aging</div><div class="big" id="starveAging">off</div></div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const simulations = [
+      { key: 'THREADS', label: 'Threads & Concurrency', icon: '◎', color: 'var(--cyan)' },
+      { key: 'PROCESSES', label: 'Processes & Parallelism', icon: '⬡', color: 'var(--blue)' },
+      { key: 'RACE', label: 'Race Condition', icon: '⚡', color: 'var(--red)' },
+      { key: 'MUTEX', label: 'Mutex / Monitor', icon: '⚿', color: 'var(--purple)' },
+      { key: 'SEMAPHORE', label: 'Semaphore', icon: '◉', color: 'var(--purple)' },
+      { key: 'PRODCONS', label: 'Producer — Consumer', icon: '⇄', color: 'var(--green)' },
+      { key: 'DEADLOCK', label: 'Deadlock', icon: '⛔', color: 'var(--red)' },
+      { key: 'STARVATION', label: 'Starvation', icon: '☁', color: 'var(--orange)' },
+    ];
+
+    const state = {
+      active: 'THREADS',
+      timers: [],
+      threads: { count: 4, speed: 5, active: 0, waiting: 3, switches: 0, running: false },
+      processes: { p0: 0, p1: 0, running: false },
+      race: { threads: 3, iters: 20, mutex: true, shared: 0, expected: 60, lost: 0, running: false },
+      mutex: { counter: 0, inCs: 'none', locked: false, running: false },
+      sem: { threads: 5, limit: 2, permits: 2, active: 0, waiting: 0, running: false },
+      pc: { cap: 8, produced: 0, consumed: 0, buffer: [], running: false },
+      deadlock: { running: false, locked: false },
+      starve: { running: false, aging: false, ticks: [], counts: [], starving: 1, runningThread: 'T-0' },
+    };
+
+    const nav = document.getElementById('nav');
+    const simCards = [...document.querySelectorAll('.sim')];
+
+    function createNav() {
+      nav.innerHTML = simulations.map(s => `
+        <button data-key="${s.key}">
+          <span class="icon" style="color:${s.color}">${s.icon}</span>
+          <span>${s.label}</span>
+        </button>
+      `).join('');
+      nav.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => switchSim(btn.dataset.key));
+      });
+      renderNav();
+    }
+
+    function renderNav() {
+      nav.querySelectorAll('button').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.key === state.active);
+      });
+    }
+
+    function switchSim(key) {
+      state.active = key;
+      renderNav();
+      simCards.forEach(card => card.classList.toggle('active', card.dataset.key === key));
+      document.getElementById('statStatus').textContent = key.toLowerCase();
+    }
+
+    function setText(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    }
+
+    function clearTimers() {
+      state.timers.forEach(id => clearInterval(id));
+      state.timers = [];
+    }
+
+    function resetThreads() {
+      clearTimers();
+      state.threads = { count: Number(document.getElementById('threadsCount').value || 4), speed: Number(document.getElementById('threadsSpeed').value || 5), active: 0, waiting: Math.max(0, Number(document.getElementById('threadsCount').value || 4) - 1), switches: 0, running: false };
+      renderThreadsTimeline();
+      updateThreadsStats();
+    }
+
+    function renderThreadsTimeline() {
+      const wrap = document.getElementById('threadTimeline');
+      const rows = [];
+      for (let i = 0; i < state.threads.count; i++) {
+        const fill = i === 0 ? 'green' : i === 1 ? 'warn' : '';
+        const width = state.threads.running ? 40 + ((state.threads.switches + i * 9) % 55) : 30 + i * 8;
+        rows.push(`
+          <div class="timeline-row">
+            <div>T-${i}</div>
+            <div class="track"><div class="fill ${fill}" style="--w:${width}%"></div></div>
+            <div>${i === 0 ? 'run' : 'wait'}</div>
+          </div>
+        `);
+      }
+      wrap.innerHTML = rows.join('');
+    }
+
+    function updateThreadsStats() {
+      setText('threadsActive', state.threads.active);
+      setText('threadsWaiting', state.threads.waiting);
+      setText('threadsSwitches', state.threads.switches);
+    }
+
+    function startThreads() {
+      resetThreads();
+      state.threads.running = true;
+      let current = 0;
+      const speed = Number(document.getElementById('threadsSpeed').value || 5);
+      const delay = Math.max(180, 900 - speed * 70);
+      const id = setInterval(() => {
+        state.threads.switches += 1;
+        current = (current + 1) % state.threads.count;
+        state.threads.active = 1;
+        state.threads.waiting = Math.max(0, state.threads.count - 1);
+        renderThreadsTimeline();
+        updateThreadsStats();
+        document.getElementById('statStatus').textContent = `threads running T-${current}`;
+        if (state.threads.switches > state.threads.count * 8) {
+          clearInterval(id);
+          state.threads.running = false;
+          document.getElementById('statStatus').textContent = 'threads ready';
+        }
+      }, delay);
+      state.timers.push(id);
+      updateThreadsStats();
+    }
+
+    function resetProcesses() {
+      clearTimers();
+      state.processes = { p0: 0, p1: 0, running: false };
+      setText('p0Ticks', 0);
+      setText('p1Ticks', 0);
+      document.getElementById('core0Fill').style.setProperty('--w', '35%');
+      document.getElementById('core1Fill').style.setProperty('--w', '55%');
+    }
+
+    function startProcesses() {
+      resetProcesses();
+      state.processes.running = true;
+      const id = setInterval(() => {
+        state.processes.p0 += 1;
+        state.processes.p1 += 1;
+        document.getElementById('p0Ticks').textContent = state.processes.p0;
+        document.getElementById('p1Ticks').textContent = state.processes.p1;
+        document.getElementById('core0Fill').style.setProperty('--w', `${20 + (state.processes.p0 * 7) % 80}%`);
+        document.getElementById('core1Fill').style.setProperty('--w', `${25 + (state.processes.p1 * 9) % 75}%`);
+        if (state.processes.p0 % 4 === 0) document.getElementById('statStatus').textContent = `core 0 tick ${state.processes.p0}`;
+        if (state.processes.p1 % 5 === 0) document.getElementById('statStatus').textContent = `core 1 tick ${state.processes.p1}`;
+      }, 450);
+      state.timers.push(id);
+    }
+
+    function burstProcesses() {
+      state.processes.p0 += 3;
+      state.processes.p1 += 2;
+      document.getElementById('p0Ticks').textContent = state.processes.p0;
+      document.getElementById('p1Ticks').textContent = state.processes.p1;
+      document.getElementById('core0Fill').style.setProperty('--w', `${30 + (state.processes.p0 * 11) % 70}%`);
+      document.getElementById('core1Fill').style.setProperty('--w', `${35 + (state.processes.p1 * 13) % 65}%`);
+    }
+
+    function resetRace() {
+      clearTimers();
+      state.race.shared = 0;
+      state.race.expected = state.race.threads * state.race.iters;
+      state.race.lost = 0;
+      state.race.running = false;
+      document.getElementById('raceLog').textContent = 'Ready. Toggle mutex and start the worker.';
+      setText('raceShared', 0);
+      setText('raceExpected', state.race.expected);
+      setText('raceLost', 0);
+    }
+
+    function startRace() {
+      resetRace();
+      state.race.threads = Number(document.getElementById('raceThreads').value || 3);
+      state.race.iters = Number(document.getElementById('raceIters').value || 20);
+      state.race.mutex = document.getElementById('raceMutex').checked;
+      state.race.expected = state.race.threads * state.race.iters;
+      state.race.running = true;
+      setText('raceExpected', state.race.expected);
+      const log = document.getElementById('raceLog');
+      log.textContent = `Starting ${state.race.threads} threads, ${state.race.iters} iterations each\nMutex: ${state.race.mutex ? 'enabled' : 'disabled'}\nExpected final value: ${state.race.expected}\n`;
+      let completed = 0;
+      const id = setInterval(() => {
+        const raceHit = !state.race.mutex && Math.random() < 0.35;
+        if (!raceHit) {
+          state.race.shared += 1;
+        } else {
+          state.race.lost += 1;
+          log.textContent += `lost update detected at shared=${state.race.shared}\n`;
+        }
+        completed += 1;
+        setText('raceShared', state.race.shared);
+        setText('raceLost', state.race.lost);
+        if (completed >= state.race.expected) {
+          clearInterval(id);
+          state.race.running = false;
+          log.textContent += state.race.shared === state.race.expected
+            ? `\nfinal: ${state.race.shared} = expected. mutex protected.`
+            : `\nfinal: ${state.race.shared} < expected. lost ${state.race.expected - state.race.shared} updates.`;
+        }
+      }, state.race.mutex ? 90 : 55);
+      state.timers.push(id);
+    }
+
+    function resetMutex() {
+      clearTimers();
+      state.mutex = { counter: 0, inCs: 'none', locked: false, running: false };
+      document.getElementById('mutexLog').textContent = 'Critical section is free.';
+      setText('mutexInCs', 'none');
+      setText('mutexState', 'free');
+      setText('mutexCounter', 0);
+    }
+
+    function startMutex() {
+      resetMutex();
+      state.mutex.running = true;
+      const log = document.getElementById('mutexLog');
+      const id = setInterval(() => {
+        state.mutex.locked = true;
+        state.mutex.inCs = `T-${state.mutex.counter % 4}`;
+        state.mutex.counter += 1;
+        setText('mutexInCs', state.mutex.inCs);
+        setText('mutexState', 'locked');
+        setText('mutexCounter', state.mutex.counter);
+        log.textContent = `${state.mutex.inCs} entered critical section\ncounter = ${state.mutex.counter}\n`;
+        setTimeout(() => {
+          state.mutex.locked = false;
+          state.mutex.inCs = 'none';
+          setText('mutexInCs', 'none');
+          setText('mutexState', 'free');
+          log.textContent += `\nmutex released.`;
+        }, 220);
+        if (state.mutex.counter > 12) {
+          clearInterval(id);
+          state.mutex.running = false;
+        }
+      }, 650);
+      state.timers.push(id);
+    }
+
+    function buildSemaphore() {
+      const slots = document.getElementById('semSlots');
+      const limit = Number(document.getElementById('semLimit').value || 2);
+      state.sem.limit = limit;
+      state.sem.permits = Math.min(limit, state.sem.permits || limit);
+      slots.innerHTML = '';
+      for (let i = 0; i < Math.max(1, limit); i++) {
+        const filled = i < state.sem.permits;
+        const el = document.createElement('div');
+        el.className = `resource ${filled ? 'free' : 'waiting'}`;
+        el.innerHTML = `<div class="top"><span>permit ${i + 1}</span><span>${filled ? 'available' : 'taken'}</span></div><div class="state">${filled ? '✓' : '…'}</div>`;
+        slots.appendChild(el);
+      }
+      setText('semPermits', state.sem.permits);
+      setText('semActive', state.sem.active);
+      setText('semWaiting', state.sem.waiting);
+    }
+
+    function resetSemaphore() {
+      clearTimers();
+      state.sem.threads = Number(document.getElementById('semThreads').value || 5);
+      state.sem.limit = Number(document.getElementById('semLimit').value || 2);
+      state.sem.permits = state.sem.limit;
+      state.sem.active = 0;
+      state.sem.waiting = 0;
+      state.sem.running = false;
+      buildSemaphore();
+    }
+
+    function acquireSemaphore() {
+      if (state.sem.permits > 0) {
+        state.sem.permits -= 1;
+        state.sem.active += 1;
+        state.sem.waiting = Math.max(0, state.sem.threads - state.sem.active);
+        document.getElementById('statStatus').textContent = 'semaphore acquired';
+      } else {
+        state.sem.waiting += 1;
+        document.getElementById('statStatus').textContent = 'waiting for permit';
+      }
+      buildSemaphore();
+    }
+
+    function startSemaphore() {
+      resetSemaphore();
+      state.sem.running = true;
+      const id = setInterval(() => {
+        if (state.sem.permits > 0) {
+          state.sem.permits -= 1;
+          state.sem.active += 1;
+          state.sem.waiting = Math.max(0, state.sem.threads - state.sem.active);
+        } else {
+          state.sem.active = Math.max(0, state.sem.active - 1);
+          state.sem.permits = Math.min(state.sem.limit, state.sem.permits + 1);
+        }
+        buildSemaphore();
+        if (state.sem.active > state.sem.limit + 2) {
+          clearInterval(id);
+          state.sem.running = false;
+        }
+      }, 700);
+      state.timers.push(id);
+    }
+
+    function buildBuffer() {
+      const cap = Number(document.getElementById('pcCap').value || 8);
+      state.pc.cap = cap;
+      const wrap = document.getElementById('bufferSlots');
+      wrap.innerHTML = '';
+      for (let i = 0; i < cap; i++) {
+        const filled = i < state.pc.buffer.length;
+        const el = document.createElement('div');
+        el.className = `slot ${filled ? 'filled' : ''}`;
+        el.textContent = filled ? state.pc.buffer[i] : i + 1;
+        wrap.appendChild(el);
+      }
+      setText('pcProduced', state.pc.produced);
+      setText('pcConsumed', state.pc.consumed);
+      setText('pcSize', state.pc.buffer.length);
+    }
+
+    function resetPC() {
+      clearTimers();
+      state.pc = { cap: Number(document.getElementById('pcCap').value || 8), produced: 0, consumed: 0, buffer: [], running: false };
+      buildBuffer();
+    }
+
+    function produceItem() {
+      if (state.pc.buffer.length >= state.pc.cap) {
+        document.getElementById('statStatus').textContent = 'buffer full';
+        return;
+      }
+      const item = `I${state.pc.produced}`;
+      state.pc.produced += 1;
+      state.pc.buffer.unshift(item);
+      document.getElementById('statStatus').textContent = `produced ${item}`;
+      buildBuffer();
+    }
+
+    function consumeItem() {
+      if (state.pc.buffer.length === 0) {
+        document.getElementById('statStatus').textContent = 'buffer empty';
+        return;
+      }
+      const item = state.pc.buffer.shift();
+      state.pc.consumed += 1;
+      document.getElementById('statStatus').textContent = `consumed ${item}`;
+      buildBuffer();
+    }
+
+    function buildDeadlock() {
+      const graph = document.getElementById('deadlockGraph');
+      graph.innerHTML = '';
+      const nodes = ['T-0', 'T-1', 'T-2', 'R-0', 'R-1', 'R-2'];
+      nodes.forEach((name, i) => {
+        const el = document.createElement('div');
+        el.className = 'circle';
+        el.textContent = name;
+        el.style.color = i < 3 ? 'var(--cyan)' : 'var(--yellow)';
+        graph.appendChild(el);
+        if (i === 2) {
+          const arrow = document.createElement('div');
+          arrow.className = 'arrow';
+          arrow.textContent = '↻';
+          graph.appendChild(arrow);
+        }
+      });
+
+      const wrap = document.getElementById('deadlockResources');
+      const resources = [
+        { n: 'R0', s: 'free', c: '0/1' },
+        { n: 'R1', s: 'free', c: '0/1' },
+        { n: 'R2', s: 'free', c: '0/1' },
+      ];
+      wrap.innerHTML = resources.map(r => `
+        <div class="resource ${r.s}">
+          <div class="top"><span>${r.n}</span><span>${r.c}</span></div>
+          <div class="state">${r.s}</div>
+        </div>
+      `).join('');
+    }
+
+    function startDeadlock() {
+      state.deadlock.running = true;
+      state.deadlock.locked = true;
+      buildDeadlock();
+      const wrap = document.getElementById('deadlockResources');
+      wrap.innerHTML = [
+        ['R0', 'locked', 'T-0 holds'],
+        ['R1', 'locked', 'T-1 holds'],
+        ['R2', 'locked', 'T-2 holds'],
+      ].map(([n, s, d]) => `
+        <div class="resource locked">
+          <div class="top"><span>${n}</span><span>1/1</span></div>
+          <div class="state">${d}</div>
+        </div>
+      `).join('');
+      document.getElementById('statStatus').textContent = 'deadlock detected';
+    }
+
+    function resetDeadlock() {
+      state.deadlock.running = false;
+      state.deadlock.locked = false;
+      buildDeadlock();
+      document.getElementById('statStatus').textContent = 'deadlock cleared';
+    }
+
+    function buildStarvation() {
+      const wrap = document.getElementById('starvationBars');
+      const data = [
+        { t: 'T-0', p: 4, cpu: 0 },
+        { t: 'T-1', p: 3, cpu: 0 },
+        { t: 'T-2', p: 2, cpu: 0 },
+        { t: 'T-3', p: 1, cpu: 0 },
+      ];
+      state.starve.ticks = data;
+      wrap.innerHTML = data.map((row, idx) => `
+        <div class="timeline-row">
+          <div>${row.t} P=${row.p}</div>
+          <div class="track"><div class="fill ${idx === 0 ? 'green' : idx === 3 ? 'red' : 'warn'}" style="--w:${25 + idx * 12}%"></div></div>
+          <div>${row.cpu}</div>
+        </div>
+      `).join('');
+      setText('starveCount', state.starve.starving);
+      setText('starveRunning', state.starve.runningThread);
+      setText('starveAging', state.starve.aging ? 'on' : 'off');
+    }
+
+    function startStarvation() {
+      state.starve.running = true;
+      state.starve.aging = false;
+      state.starve.starving = 1;
+      state.starve.runningThread = 'T-0';
+      buildStarvation();
+      let tick = 0;
+      const id = setInterval(() => {
+        tick += 1;
+        state.starve.runningThread = tick % 5 === 0 ? 'T-1' : 'T-0';
+        state.starve.starving = tick > 8 ? 1 : 0;
+        if (tick > 14) state.starve.aging = true;
+        buildStarvation();
+        if (tick > 24) {
+          clearInterval(id);
+          state.starve.running = false;
+        }
+      }, 500);
+      state.timers.push(id);
+    }
+
+    function triggerAging() {
+      state.starve.aging = true;
+      state.starve.runningThread = 'T-3';
+      state.starve.starving = 0;
+      buildStarvation();
+      document.getElementById('statStatus').textContent = 'aging boosted low priority thread';
+    }
+
+    function resetStarvation() {
+      clearTimers();
+      state.starve.running = false;
+      state.starve.aging = false;
+      state.starve.starving = 1;
+      state.starve.runningThread = 'T-0';
+      buildStarvation();
+    }
+
+    function bindControls() {
+      document.getElementById('threadsCount').addEventListener('input', () => {
+        state.threads.count = Number(document.getElementById('threadsCount').value || 4);
+        state.threads.waiting = Math.max(0, state.threads.count - 1);
+        renderThreadsTimeline();
+        updateThreadsStats();
+      });
+      document.getElementById('threadsSpeed').addEventListener('input', () => {
+        state.threads.speed = Number(document.getElementById('threadsSpeed').value || 5);
+      });
+      document.getElementById('raceThreads').addEventListener('input', () => {
+        state.race.threads = Number(document.getElementById('raceThreads').value || 3);
+        state.race.expected = state.race.threads * state.race.iters;
+        setText('raceExpected', state.race.expected);
+      });
+      document.getElementById('raceIters').addEventListener('input', () => {
+        state.race.iters = Number(document.getElementById('raceIters').value || 20);
+        state.race.expected = state.race.threads * state.race.iters;
+        setText('raceExpected', state.race.expected);
+      });
+      document.getElementById('raceMutex').addEventListener('change', () => {
+        state.race.mutex = document.getElementById('raceMutex').checked;
+      });
+      document.getElementById('semLimit').addEventListener('input', buildSemaphore);
+      document.getElementById('semThreads').addEventListener('input', () => {
+        state.sem.threads = Number(document.getElementById('semThreads').value || 5);
+        buildSemaphore();
+      });
+      document.getElementById('pcCap').addEventListener('input', () => {
+        state.pc.cap = Number(document.getElementById('pcCap').value || 8);
+        if (state.pc.buffer.length > state.pc.cap) state.pc.buffer = state.pc.buffer.slice(0, state.pc.cap);
+        buildBuffer();
+      });
+    }
+
+    document.addEventListener('click', (event) => {
+      const action = event.target?.dataset?.action;
+      if (!action) return;
+      const map = {
+        'threads-start': startThreads,
+        'threads-reset': resetThreads,
+        'process-start': startProcesses,
+        'process-burst': burstProcesses,
+        'process-reset': resetProcesses,
+        'race-start': startRace,
+        'race-reset': resetRace,
+        'mutex-start': startMutex,
+        'mutex-reset': resetMutex,
+        'sem-start': startSemaphore,
+        'sem-acquire': acquireSemaphore,
+        'sem-reset': resetSemaphore,
+        'pc-produce': produceItem,
+        'pc-consume': consumeItem,
+        'pc-reset': resetPC,
+        'deadlock-start': startDeadlock,
+        'deadlock-reset': resetDeadlock,
+        'starve-start': startStarvation,
+        'starve-aging': triggerAging,
+        'starve-reset': resetStarvation,
+      };
+      if (map[action]) map[action]();
+    });
+
+    function initialize() {
+      createNav();
+      bindControls();
+      renderThreadsTimeline();
+      buildSemaphore();
+      buildBuffer();
+      buildDeadlock();
+      buildStarvation();
+      resetThreads();
+      resetProcesses();
+      resetRace();
+      resetMutex();
+      resetSemaphore();
+      resetPC();
+      resetDeadlock();
+      resetStarvation();
+      switchSim('THREADS');
+      document.getElementById('statSimulations').textContent = simulations.length;
+      document.getElementById('statStatus').textContent = 'ready';
+    }
+
+    initialize();
+  </script>
+</body>
+</html>
